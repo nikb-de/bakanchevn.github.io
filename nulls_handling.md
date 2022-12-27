@@ -66,10 +66,19 @@ SELECT COUNT(*)
 ```
 
 One day new status appeared in the system - "Gold VIP". So business updated the Excel file. Unfortunately, there was an empty line in the middle of the file. So the table looked like this:
+
+
+| category_name |
+| --- |
+| VIP |
+| Enterprise |
+| null |
+| Gold VIP |
+
 Unfortunately, the query didn't work anymore. It returned 0 rows.
 It is because of the NULL value in the tuple, which is used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
 
-Quick fix was to remove the empty line from the Excel file. But it is not a good solution. We need to handle NULLs in the query.
+A quick fix was to remove the empty line from the Excel file. But it is not a good solution. We need to handle NULLs in the query.
 
 ```sql
 SELECT COUNT(*) 
