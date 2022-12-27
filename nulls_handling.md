@@ -42,3 +42,54 @@ That looked like a good candidate to change the approach. We needed to have the 
 The idea was the following: 
 
 > Implement the table with the statuses that should be excluded. This table can be updated by the business. 
+
+![image](images/google-drive-to-bq.jpg)
+
+So we created a new table with the following structure: First the table has been populated with the following data:
+
+| category_name |
+| --- |
+| VIP |
+| Enterprise |
+
+So we changed the query to the following:
+
+```sql
+SELECT COUNT(*) 
+  FROM customers
+ WHERE created_at >= DATEADD(DAY, -1, GETDATE()) 
+   AND client_category NOT IN 
+       (
+       SELECT category_name 
+         FROM vip_category_list
+       )
+```
+
+One day new status appeared in the system - "Gold VIP". So business updated the Excel file. Unfortunately, there was an empty line in the middle of the file. So the table looked like this:
+Unfortunately, the query didn't work anymore. It returned 0 rows.
+It is because of the NULL value in the tuple, which is used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
+
+Quick fix was to remove the empty line from the Excel file. But it is not a good solution. We need to handle NULLs in the query.
+
+```sql
+SELECT COUNT(*) 
+  FROM customers
+ WHERE created_at >= DATEADD(DAY, -1, GETDATE()) 
+   AND client_category NOT IN 
+       (
+       SELECT category_name 
+         FROM vip_category_list
+        WHERE category_name IS NOT NULL
+       )
+```
+
+
+Of course, we could use COALESCE function to replace NULLs with some value. Also, we can set the default value / non-null for the column.
+
+Another option is to create a service instead of an Excel file. It will be responsible for updating the table. 
+
+## Conclusion
+
+- NULLs are special values in SQL. They are used to represent missing or unknown values. Be careful with NOT IN and other operators, which can return NULLs.
+- If you use semi-structured or non-structured data, NULL handling should be done before the final request.
+- Think about data quality checks. Here they can be applied after the data has been loaded into the database from an Excel file or in the final table.
