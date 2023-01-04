@@ -45,7 +45,7 @@ The idea was the following:
 
 ![image](images/google-drive-to-bq.jpg)
 
-To achieve it we created a new table with the following structure: First the table has been populated with the following data:
+To achieve it we created a new table and in the beginning the table has been populated with the following data:
 
 | category_name |
 | --- |
