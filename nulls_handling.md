@@ -1,11 +1,12 @@
-# Nulls handling 
+# Nulls handling
+
 We all know that NULL is a special value (pointer) in SQL. It is used to represent missing or unknown values.
 To work with NULLs we have to use special operators and functions. When we use it just by filtering we use IS NULL and IS NOT NULL operators or COALESCE functions. Usually, it is a bit annoying but we handle it.
 
 But there can be situations when we don't expect it and it can cause some problems.
-Here is the story begins. 
+Here is the story begins.
 
-## The problem. 
+## The problem
 
 We had a simple request from the business to get daily updates about the number of new users on the platform.
 We designed a table with the following structure:
@@ -19,7 +20,7 @@ We designed a table with the following structure:
 
 The data had been coming from the microservice via Kafka, which was responsible for customer record creation.
 So on daily basis, we could get the number of new customers.
-The request was quite simple: 
+The request was quite simple:
 
 ```sql  
 SELECT COUNT(*) 
@@ -36,16 +37,16 @@ SELECT COUNT(*)
    AND customer_status NOT IN ('VIP', 'Enterprise')
 ```
 
-After a while, we got a new requirement. The VIP department can enrich customer types with new statuses. With the current query, we would have to change hardcoded statuses every time we received a new one. 
+After a while, we got a new requirement. The VIP department can enrich customer types with new statuses. With the current query, we would have to change hardcoded statuses every time we received a new one.
 
-That looked like a good candidate to change the approach. We needed to have the ability to filter out customers with statuses that should be excluded. 
-The idea was the following: 
+That looked like a good candidate to change the approach. We needed to have the ability to filter out customers with statuses that should be excluded.
+The idea was the following:
 
-> Implement the table with the statuses that should be excluded. This table can be updated by the business. 
+> Implement the table with the statuses that should be excluded. This table can be updated by the business.
 
 ![image](images/google-drive-to-bq.jpg)
 
-To achieve it we created a new table and in the beginning the table has been populated with the following data:
+To achieve it we created a new table and in the beginning, the table has been populated with the following data:
 
 | category_name |
 | --- |
@@ -67,7 +68,6 @@ SELECT COUNT(*)
 
 One day new status appeared in the system - "Gold VIP" and the business user updated the Excel file. Unfortunately, there was an empty line in the middle of the file and after the integration part the table values were:
 
-
 | category_name |
 | --- |
 | VIP |
@@ -76,7 +76,7 @@ One day new status appeared in the system - "Gold VIP" and the business user upd
 | Gold VIP |
 
 The query didn't work anymore. It returned 0 rows.
-It happened because of the NULL value in the tuple, which were used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
+It happened because of the NULL value in the tuple, which was used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
 
 A quick fix was to remove the empty line from the Excel file. But it is not a good solution. We need to handle NULLs in the query.
 
@@ -92,10 +92,9 @@ SELECT COUNT(*)
        )
 ```
 
-
 Of course, we could use COALESCE function to replace NULLs with some value. Also, we can set the default value / non-null for the column.
 
-Another option is to create a service instead of an Excel file. It will be responsible for updating the table. 
+Another option is to create a service instead of an Excel file. It will be responsible for updating the table.
 
 ## Conclusion
 
