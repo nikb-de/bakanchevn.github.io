@@ -45,7 +45,7 @@ The idea was the following:
 
 ![image](images/google-drive-to-bq.jpg)
 
-So we created a new table with the following structure: First the table has been populated with the following data:
+To achieve it we created a new table with the following structure: First the table has been populated with the following data:
 
 | category_name |
 | --- |
@@ -65,7 +65,7 @@ SELECT COUNT(*)
        )
 ```
 
-One day new status appeared in the system - "Gold VIP". So business updated the Excel file. Unfortunately, there was an empty line in the middle of the file. So the table looked like this:
+One day new status appeared in the system - "Gold VIP" and the business user updated the Excel file. Unfortunately, there was an empty line in the middle of the file and after the integration part the table values were:
 
 
 | category_name |
@@ -75,8 +75,8 @@ One day new status appeared in the system - "Gold VIP". So business updated the 
 | null |
 | Gold VIP |
 
-Unfortunately, the query didn't work anymore. It returned 0 rows.
-It is because of the NULL value in the tuple, which is used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
+The query didn't work anymore. It returned 0 rows.
+It happened because of the NULL value in the tuple, which were used in the IN clause. If at least one value in the tuple is NULL, the result of the expression is NULL, and the query returns 0 rows.
 
 A quick fix was to remove the empty line from the Excel file. But it is not a good solution. We need to handle NULLs in the query.
 
